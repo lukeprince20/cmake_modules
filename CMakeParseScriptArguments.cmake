@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.14)
+
+get_cmake_property(role CMAKE_ROLE)
+if(role STREQUAL "SCRIPT")
+
+set(_cmake_parse_script_arguments_file "${CMAKE_CURRENT_LIST_FILE}")
+message("${_cmake_parse_script_arguments_file}")
+
+function(cmake_parse_script_arguments prefix)
+  set(index 0)
+  while(index LESS CMAKE_ARGC)
+    set(current_arg "${CMAKE_ARGV${index}}")
+
+    if(NOT script_index)
+      if(current_arg STREQUAL "-P") 
+        math(EXPR script_index "${index} + 1")
+        math(EXPR script_argc "${CMAKE_ARGC} - ${script_index}")
+        set(${prefix}_SCRIPT_ARGC ${script_argc} PARENT_SCOPE)
+      endif()
+    endif()
+    if(script_index)
+      math(EXPR script_argv_index "${index} - ${script_index}")
+      set(${prefix}_SCRIPT_ARGV${script_argv_index} ${current_arg} PARENT_SCOPE)
+    endif()
+
+    if(NOT unparsed_index)
+      if(current_arg STREQUAL "--")
+        set(unparsed_index ${index})
+      endif()
+    endif()
+    if(unparsed_index)
+      list(APPEND unparsed_arguments ${current_arg})
+    endif()
+  
+    math(EXPR index "${index} + 1")
+  endwhile()
+
+  get_cmake_property(cache_vars CACHE_VARIABLES)
+  foreach(cache_var ${cache_vars})
+    get_property(cache_var_helpstring CACHE ${cache_var} PROPERTY HELPSTRING)
+    if(cache_var_helpstring STREQUAL "No help, variable specified on the command line.")
+      list(APPEND cache_args ${cache_var})
+    endif()
+  endforeach()
+
+  set(${prefix}_CACHE_ARGS ${cache_args} PARENT_SCOPE)
+  set(${prefix}_SCRIPT_INDEX ${script_index} PARENT_SCOPE)
+  set(${prefix}_UNPARSED_INDEX ${unparsed_index} PARENT_SCOPE)
+  set(${prefix}_UNPARSED_ARGUMENTS ${unparsed_arguments} PARENT_SCOPE)
+endfunction()
+
+endif(role STREQUAL "SCRIPT")
