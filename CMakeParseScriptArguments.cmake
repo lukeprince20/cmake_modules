@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 3.14)
 get_cmake_property(role CMAKE_ROLE)
 if(role STREQUAL "SCRIPT")
 
-set(_cmake_parse_script_arguments_file "${CMAKE_CURRENT_LIST_FILE}")
-message("${_cmake_parse_script_arguments_file}")
-
 function(cmake_parse_script_arguments prefix)
   set(index 0)
   while(index LESS CMAKE_ARGC)
